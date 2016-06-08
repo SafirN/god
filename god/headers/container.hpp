@@ -7,6 +7,8 @@ namespace game {
 	public:
 		explicit Container(std::string id_);
 		virtual ~Container();
+
+		void use(Actor * actor);
 	};
 }
 

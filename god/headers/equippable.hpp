@@ -7,6 +7,8 @@ namespace game {
 	public:
 		explicit Equippable(std::string id_);
 		virtual ~Equippable();
+
+		void use(Actor * actor);
 	};
 }
 

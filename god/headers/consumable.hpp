@@ -7,6 +7,8 @@ namespace game {
 	public:
 		explicit Consumable(std::string id_);
 		virtual ~Consumable();
+
+		void use(Actor * actor);
 	protected:
 	private:
 	};

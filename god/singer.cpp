@@ -1,12 +1,53 @@
 #include "headers/singer.hpp"
+#include "headers/monster.hpp"
 
 using namespace game;
 
 Singer::Singer(std::string name_) : Musician(name_, "singer") {
-	fightMoves = {"Microphone toss", "Wail", "Lullaby"};
-	actorBattleAction["mictoss"] = [this] (Monster * target) -> void { std::cout << "micToss" << std::endl; };
-	actorBattleAction["wail"] = [this] (Monster * target) -> void { std::cout << "wail" << std::endl; };
-	actorBattleAction["lullaby"] = [this] (Monster * target) -> void { std::cout << "lullaby" << std::endl; };
+	fightMoves = {"MicrophoneToss", "Wail", "Lullaby"};
+	actBattleAction["mictoss"] = [this] (Monster * target) -> void {
+		if(this->hit()) {
+			int damage = determineDamage(13 + this->getAttack());
+			if(damage > target->getDefense()) {
+				target->setHealth(target->getHealth() - (damage - target->getDefense()));
+				target->announceDamage(damage - target->getDefense());
+			} else {
+				target->announceDamage(0);
+			}
+			this->isDead(target);
+		} else {
+			this->miss(target);
+		}
+		this->stillBattle();
+	};
+	simpleBattleAction["wail"] = [this] () -> void {
+		std::unordered_map<std::string, Monster*> monsters = this->getOpponents();
+		for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
+			if(this->hit()) {
+				it->second->setStatus("asleep");
+				it->second->announceStatus();
+			} else {
+				miss(it->second);
+			}
+		}
+	};
+	simpleBattleAction["lullaby"] = [this] () -> void {
+		std::unordered_map<std::string, Monster*> monsters = this->getOpponents();
+		for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
+			if(this->hit()) {
+				int damage = determineDamage(10 + this->getAttack());
+				if(damage > it->second->getDefense()) {
+					it->second->setHealth(it->second->getHealth() - (damage - it->second->getDefense()));
+					it->second->announceDamage(damage - it->second->getDefense());
+				} else {
+					it->second->announceDamage(0);
+				}
+				this->isDead(it->second);	
+			} else {
+				miss(it->second);
+			}
+		}
+	};
 }
 
 Singer::~Singer() {

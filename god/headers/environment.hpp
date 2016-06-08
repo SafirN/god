@@ -7,6 +7,7 @@ namespace game {
 	class Item;
 	class Actor;
 	class Monster;
+	class Musician;
 	class Environment {
 	public:
 		explicit Environment(std::string id);
@@ -26,9 +27,10 @@ namespace game {
 		void setDescription(std::string description);
 		void addEntrance(std::tuple<Environment*, std::string, std::string, std::string> info);
 		void addMonster(Monster * monster);
+		void removeMonster(std::string name);
 		void enter();
 		void leave();
-		void removeItem(Item &item);
+		void removeItem(std::string identifier);
 		void addItem(std::string identifier, Item * item);
 		
 		//events
@@ -45,7 +47,8 @@ namespace game {
 	protected:
 		std::string id;
 		std::string description;
-		bool player;
+		Musician * player;
+		bool containsPlayer;
 
 		std::unordered_map<std::string, Monster*> currentMonsters;
 		std::unordered_map<std::string, std::tuple<Environment*, std::string, std::string>> currentNeighbors;

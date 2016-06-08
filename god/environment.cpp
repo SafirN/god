@@ -11,7 +11,7 @@
 
 using namespace game;
 
-Environment::Environment(std::string id_) : id(id_), player(false) {
+Environment::Environment(std::string id_) : id(id_), containsPlayer(false) {
 	currentMonsters = std::unordered_map<std::string, Monster*>();
 	currentNeighbors = std::unordered_map<std::string, std::tuple<Environment*, std::string, std::string>>();
 	currentItems = std::unordered_map<std::string, Item*>();
@@ -79,17 +79,21 @@ void Environment::addMonster(Monster * monster) {
 	currentMonsters[name] = monster;
 }
 
+void Environment::removeMonster(std::string name) {
+	currentMonsters.erase(name);
+}
+
 std::string Environment::getId() const {
 	return id;
 }
 
 void Environment::enter() {
-	player = true;
+	containsPlayer = true;
 	printDescription();
 }
 
 void Environment::leave() {
-	player = false;
+	containsPlayer = false;
 }
 
 std::unordered_map<std::string, Monster*> & Environment::getMonsters() {
@@ -104,8 +108,8 @@ std::unordered_map<std::string, Item*> & Environment::getItems() {
 	return currentItems;
 }
 
-void Environment::removeItem(Item &item) {
-
+void Environment::removeItem(std::string identifier) {
+	currentItems.erase(identifier);
 }
 
 void Environment::addItem(std::string identifier, Item * item) {
@@ -126,7 +130,7 @@ bool Environment::containsMonsters() const {
 }
 
 bool Environment::playerPresent() const {
-	return player;
+	return containsPlayer;
 }
 
 bool Environment::isLocked(std::string direction) {
@@ -144,11 +148,13 @@ void Environment::printNeighbors() {
 }
 
 void Environment::checkParticipation(Monster * monster) {
-	srand(1);
+	time_t t;
+	srand((unsigned) time(&t));
 	for(std::unordered_map<std::string, Monster*>::iterator it = currentMonsters.begin(); it != currentMonsters.end(); ++it) {
 		if(rand() % 5 > it->second->getLoyalty() && it->second->getName() != monster->getName()) {
-			it->second->setCombat(true);
 			std::cout << it->second->getName() << " the " << it->second->getType() << " joins the fray!" << std::endl;
+			it->second->setCombat(true);
+			player->addOpponent(monster);
 		}
 	}
 }

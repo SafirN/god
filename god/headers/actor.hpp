@@ -9,6 +9,7 @@
 namespace game {
 	class Item;
 	class Environment;
+	class Monster;
 	class Actor {
 	public:
 		explicit Actor(std::string name_, std::string type_);
@@ -16,33 +17,49 @@ namespace game {
 		
 		//getters
 		std::string getId() const;
+		std::string getName() const;
+		std::string getType() const;
+		Environment * getLocation() const;
+		Item * getItem(std::string target);
+		std::unordered_map<std::string, Monster*> & getOpponents();
 		int getHealth() const;
 		int getAttack() const;
 		int getDefense() const;
 		std::string getStatus() const;
-		std::string getType() const;
-		std::string getName() const;
-		Environment * getLocation() const;
-		Item * getItem(std::string target);
 		bool isInCombat() const;
-		virtual std::string getAlignment() const;
+		void isDead(Monster * monster);
+		double getCapacity() const;
+		std::string getGreeting() const;
+		
 		//virtual std::vector<std::string> getFightMoves() const;
 		
 		//setters
 		void setName(std::string name);
+		void setLocation(Environment * location_);
+		void addItem(std::string iName, Item * item);
+		void removeItem(std::string identifier);
+		void addOpponent(Monster * monster);
 		void setHealth(int health_);
 		void setAttack(int attack_);
 		void setDefense(int defense_);
 		void setStatus(std::string status_);
-		void setLocation(Environment * location_);
-		void addItem(std::string iName, Item * item);
 		void setCombat(bool combat);
+		void setCapacity(double cap);
 		void setGreeting(std::string);
-		void setAlignment(std::string alignment);
-		//debug funct
+
+		//actions
+		bool hit() const;
+		void miss(Actor * actor) const;
+		virtual int determineDamage(int mean);
+		void stillBattle();
+
+		//prints
 		void printItems();
 		virtual void printDescription() const;
-		void greeting() const;
+		void announceDeath() const;
+		void announceDamage(int damage) const;
+		void announceStatus() const;
+
 	protected:
 		std::string id;
 		std::string name;
@@ -53,11 +70,13 @@ namespace game {
 		int health;
 		int attack;
 		int defense;
+		double capacity;
 		bool inCombat;
 		Environment * location;
 		Environment * previousLocation;
 		std::vector<std::string> fightMoves;
 		std::unordered_map<std::string, Item*> currentItems;
+		std::unordered_map<std::string, Monster*> currentOpponents;
 	private:
 	};
 }

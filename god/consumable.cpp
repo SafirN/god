@@ -9,3 +9,7 @@ Consumable::Consumable(std::string id_) : Item(id_) {
 Consumable::~Consumable() {
 
 }
+
+void Consumable::use(Actor * actor) {
+
+}

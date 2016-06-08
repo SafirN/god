@@ -1,4 +1,5 @@
 #include "headers/item.hpp"
+#include "headers/item.hpp"
 
 using namespace game;
 
@@ -22,10 +23,18 @@ double Item::getWeight() const {
 	return weight;
 }
 
+std::string Item::getDescription() const {
+	return description;
+}
+
 void Item::setName(std::string name) {
 	this->name = name;
 }
 
 void Item::setWeight(double weight) {
 	this->weight = weight;
+}
+
+void Item::setDescription(std::string description) {
+	this->description = description;
 }

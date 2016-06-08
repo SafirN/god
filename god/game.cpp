@@ -30,6 +30,21 @@ std::string Game::nextCommand() {
 	return cmd;
 }
 
+std::vector<std::string> Game::chopInput(std::string command) {
+	std::string word = "";
+	std::vector<std::string> commandWords = std::vector<std::string>();
+	for(std::string::iterator it = command.begin(); it != command.end(); ++it) {
+		if(*it == ' ' && !word.empty()) {
+			commandWords.push_back(word);
+			word.clear();
+		} else {
+			word += *it;
+		}
+	}
+	commandWords.push_back(word);
+	return commandWords;
+}
+
 /*
  *	
  */
@@ -41,10 +56,11 @@ void Game::launch() {
 		round = true;
 		//player move
 		while(round) {
+			std::cout << "------------------------------------------------------------------------------" << std::endl;
 			command = nextCommand();
-			std::cout << std::endl;
+			std::cout << "------------------------------------------------------------------------------" << std::endl;
 			if(player->isInCombat()) {
-				battleAction(command, player);
+				battleAction(command);
 			} else {
 				action(command);
 			}
@@ -60,17 +76,7 @@ void Game::launch() {
  *	Handles the commands when the player is out of combat.
  */
 void Game::action(std::string command) {
-	std::string word = "";
-	std::vector<std::string> commandWords = std::vector<std::string>();
-	for(std::string::iterator it = command.begin(); it != command.end(); ++it) {
-		if(*it == ' ' && !word.empty()) {
-			commandWords.push_back(word);
-			word.clear();
-		} else {
-			word += *it;
-		}
-	}
-	commandWords.push_back(word);
+	std::vector<std::string> commandWords = chopInput(command);
 	if(commandWords.size() == 1) {
 		round = player->action(commandWords[0]);
 	} else if(commandWords.size() == 2) {
@@ -83,19 +89,15 @@ void Game::action(std::string command) {
 /*
  *	Handles the commands when the player is in combat.
  */
-void Game::battleAction(std::string command, Musician * musician) {
-	std::string word;
-	std::vector<std::string> commandWords = std::vector<std::string>();
-	word = "";
-	for(std::string::iterator it = command.begin(); it != command.end(); ++it) {
-		if(*it == ' ') {
-			commandWords.push_back(word);
-			word.clear();
-		} else {
-			word += *it;
-		}
+void Game::battleAction(std::string command) {
+	std::vector<std::string> commandWords = chopInput(command);
+	if(commandWords.size() == 1) {
+		round = player->battleAction(commandWords[0]);
+	} else if(commandWords.size() == 2) {
+		round = player->battleAction(commandWords[0], commandWords[1]);
+	} else {
+		std::cout << "The longest possible command has a length of two words." << std::endl;
 	}
-	commandWords.push_back(word);
 }
 
 /*
@@ -166,14 +168,18 @@ void Game::loadGameInfo() {
 			std::getline(loadFile, extracts[2], ':');
 			monster->setLoyalty(std::stoi(extracts[2]));
 			std::getline(loadFile, extracts[2], ':');
+			monster->setCapacity(std::stoi(extracts[2]));
+			std::getline(loadFile, extracts[2], ':');
 			monster->setStatus(extracts[2]);
-			std::getline(loadFile, extracts[2]);
+			std::getline(loadFile, extracts[2], ':');
 			if(extracts[2] == "yes") {
 				monster->setCombat(true);
 			} else {
 				monster->setCombat(false);
 			}
-
+			std::getline(loadFile, extracts[2]);
+			monster->setGreeting(extracts[2]);
+			
 			monMap[object] = monster;
 			//Now handle the references associated to the Actor
 			loadFile.get(c);
@@ -196,8 +202,10 @@ void Game::loadGameInfo() {
 			Item * item = decideItem(object, extracts[0]);
 			std::getline(loadFile, extracts[0], ':');
 			item->setName(extracts[0]);
-			std::getline(loadFile, extracts[0]);
+			std::getline(loadFile, extracts[0], ':');
 			item->setWeight(std::stoi(extracts[0]));
+			std::getline(loadFile, extracts[0]);
+			item->setDescription(extracts[0]);
 			itemMap[object] = item;
 		} else {
 			std::cerr << "Invalid file format. Exiting program. Contact the moron who wrote the game in order to resolve this issue." << std::endl;
@@ -321,7 +329,6 @@ void Game::intro() {
 	slowPrint("What is your name?\n");
 	std::string name;
 	getline(std::cin, name);
-
 	do {
 		slowPrint("Are you a singer, guitarist, bassist or drummer?");
 		vocation = nextCommand();
@@ -335,6 +342,7 @@ void Game::intro() {
 	} else if(vocation.compare("drummer") == 0) {
 		player = new Drummer(name);
 	}
+	player->setName(name);
 	player->setLocation(envMap["ENV1"]);
 	std::cout << std::endl;
 	slowPrint("In order to print the list of actions, type: #Action");

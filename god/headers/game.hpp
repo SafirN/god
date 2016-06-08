@@ -33,26 +33,33 @@ namespace game {
 		explicit Game();
 		virtual ~Game();
 	protected:
-
+		
 	private:
-		Musician * player;
-		bool active;
-		bool round;
-		void printActions() const;
+		//game events
+		void action(std::string command);
+		void battleAction(std::string command);
 		void intro();
 		void launch();
 		std::string nextCommand();
-		void loadGameInfo(); //startup game load
-		void loadGameInfo(std::string filename); //load saved game
-		void action(std::string command);
-		void battleAction(std::string command, Musician * musician);
+		std::vector<std::string> chopInput(std::string command);
+
+		//prints
+		void printActions() const;
 		void slowPrint(std::string input) const;
 
 		//loadfile members
 		Monster * decideAct(std::string type, std::string id);
 		Environment * decideEnv(std::string type, std::string);
 		Item * decideItem(std::string type, std::string id);
+		void loadGameInfo(); //startup game load
+		void loadGameInfo(std::string filename); //load saved game
+		void saveGameInfo(std::string filename); //save game
 
+		//variables
+		Musician * player;
+		bool active;
+		bool round;
+		
 		std::unordered_map<std::string, Monster*> monMap;
 		std::unordered_map<std::string, Environment*> envMap;
 		std::unordered_map<std::string, Item*> itemMap;
