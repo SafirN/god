@@ -5,8 +5,8 @@ using namespace game;
 Game::Game() : active(true) {
 	std::string command;
 	while(active) {
-		std::cout << "Game of Doom - all rights reserved etc. 2016." << std::endl;
-		std::cout << "Type play to play!" << std::endl;
+		std::cout << std::endl << "Game of Doom - all rights reserved etc. 2016." << std::endl << std::endl;
+		std::cout << "Type play to play!" << std::endl << std::endl;
 		command = nextCommand();
 		if(command.compare("play") == 0) {
 			launch();
@@ -27,6 +27,7 @@ std::string Game::nextCommand() {
 	for(uint i = 0; i < cmd.length(); ++i) {
 		cmd[i] = tolower(cmd[i]);
 	}
+	std::cout << std::endl;
 	return cmd;
 }
 
@@ -49,55 +50,78 @@ std::vector<std::string> Game::chopInput(std::string command) {
  *	
  */
 void Game::launch() {
-	loadGameInfo();
 	intro();
+	loadGameInfo();
 	std::string command;
 	while(active) {
 		round = true;
-		//player move
 		while(round) {
-			std::cout << "------------------------------------------------------------------------------" << std::endl;
 			command = nextCommand();
-			std::cout << "------------------------------------------------------------------------------" << std::endl;
+			std::vector<std::string> commandWords = chopInput(command);
+			std::cout << "------------------------------------------------------------------------------" << std::endl << std::endl;
 			if(player->isInCombat()) {
-				battleAction(command);
+				if(commandWords.size() == 1) {
+					round = player->battleAction(command);
+					announceBattleState();
+				} else {
+					round = player->battleAction(commandWords);
+					announceBattleState();
+				} 
 			} else {
-				action(command);
+				if(commandWords.size() == 1) {
+					round = player->action(commandWords[0]);
+				} else {
+					round = player->action(commandWords);
+				}
 			}
 		}
-		//monster move
-		while(!round) {
-			round = true;
+		std::cout << "------------------------------------------------------------------------------" << std::endl << std::endl;
+		std::unordered_map<std::string, Monster*> opponents = player->getOpponents();
+		for(std::unordered_map<std::string, Monster*>::iterator it = opponents.begin(); it != opponents.end(); ++it) {
+			if(!(it->second->isAlive())) {
+				announceMonsterDeath(it->second);
+				it->second->getLocation()->removeMonster(it->first);
+				player->removeOpponent(it->first);
+				delete it->second;
+			}
+		}
+		std::unordered_map<std::string, Monster*> monsters = player->getLocation()->getMonsters();
+		for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
+			if(it->second->isInCombat()) {
+				it->second->battleAction();
+			} else {
+				it->second->action();
+			}
+		}
+		
+		if(!stillBattle()) {
+			player->setCombat(false);
+			player->getLocation()->printDescription();
+		}
+		
+		if(player->isComplete()) {
+			active = false;
+			announceGameCompletion();
+		} else if(!player->isAlive()) {
+			active = false;
+			announcePlayerDeath();
 		}
 	}
 }
 
-/*
- *	Handles the commands when the player is out of combat.
- */
-void Game::action(std::string command) {
-	std::vector<std::string> commandWords = chopInput(command);
-	if(commandWords.size() == 1) {
-		round = player->action(commandWords[0]);
-	} else if(commandWords.size() == 2) {
-		round = player->action(commandWords[0], commandWords[1]);
-	} else {
-		std::cout << "The longest possible command has a length of two words." << std::endl;
+bool Game::stillBattle() {
+	if(player->getOpponents().size() == 0) {
+		return false;
 	}
+	return true;
 }
 
-/*
- *	Handles the commands when the player is in combat.
- */
-void Game::battleAction(std::string command) {
-	std::vector<std::string> commandWords = chopInput(command);
-	if(commandWords.size() == 1) {
-		round = player->battleAction(commandWords[0]);
-	} else if(commandWords.size() == 2) {
-		round = player->battleAction(commandWords[0], commandWords[1]);
-	} else {
-		std::cout << "The longest possible command has a length of two words." << std::endl;
+void Game::announceBattleState() {
+	std::unordered_map<std::string, Monster*> monsters = player->getOpponents();
+	for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
+		std::cout << it->second->getName() << " the " << it->second->getType() << ": " << it->second->getHealth() << " health." << std::endl; 
 	}
+	std::cout << player->getName() << " the " << player->getType() << ": " << player->getHealth() << " health." << std::endl << std::endl;
 }
 
 /*
@@ -107,8 +131,8 @@ void Game::loadGameInfo() {
 	std::unordered_map<std::string, Environment *> envRefMap = std::unordered_map<std::string, Environment*>();
 	std::unordered_map<std::string, Monster*> actRefMap = std::unordered_map<std::string, Monster*>();
 	std::unordered_map<std::string, std::vector<std::tuple<Environment *, std::string, std::string, std::string>>> neighborRefMap = std::unordered_map<std::string, std::vector<std::tuple<Environment *, std::string, std::string, std::string>>>();;
-
-	std::string extracts [5]; //five strings to describe the Environment
+	std::string tmpid;
+	std::string extracts [6]; //five strings to describe the Environment
 	std::string object;
 	char c;
 	std::ifstream loadFile;
@@ -206,12 +230,39 @@ void Game::loadGameInfo() {
 			item->setWeight(std::stoi(extracts[0]));
 			std::getline(loadFile, extracts[0]);
 			item->setDescription(extracts[0]);
-			itemMap[object] = item;
+			itemMap[item->getName()] = item;
+		} else if(object.compare("PLA") == 0) {
+			std::getline(loadFile, extracts[0], ':');
+			player->setHealth(std::stoi(extracts[0]));
+			std::getline(loadFile, extracts[0], ':');
+			player->setAttack(std::stoi(extracts[0]));
+			std::getline(loadFile, extracts[0], ':');
+			player->setDefense(std::stoi(extracts[0]));
+			std::getline(loadFile, extracts[0], ':');
+			player->setCapacity(std::stod(extracts[0]));
+			std::getline(loadFile, extracts[0], ':');
+			player->setStatus(extracts[0]);
+			std::getline(loadFile, extracts[0]);
+			if(extracts[0].compare("yes") == 0) {
+				player->setCombat(true);
+			} else {
+				player->setCombat(false);
+			}
 		} else {
+			std::cout << object << std::endl;
+			std::cout.flush();
 			std::cerr << "Invalid file format. Exiting program. Contact the moron who wrote the game in order to resolve this issue." << std::endl;
 			std::terminate();
 		}
   	}
+
+  	//för load game
+  	/*
+  	std::unordered_map<std::string, Monster*> monsters = player->getLocation()->getMonsters();
+  	for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
+
+  	}
+  	*/
 
   	//Set the proper neighbors for every environment.
   	for(std::unordered_map<std::string, Environment*>::iterator it = envMap.begin(); it != envMap.end(); ++it) {
@@ -219,7 +270,7 @@ void Game::loadGameInfo() {
 			for(std::vector<std::tuple<Environment *, std::string, std::string, std::string>>::iterator it2 = neighborRefMap[it->first].begin(); it2 != neighborRefMap[it->first].end(); ++it2) {
 				std::get<0>(*it2)->addEntrance(std::make_tuple(it->second, std::get<1>(*it2), std::get<2>(*it2), std::get<3>(*it2)));
 			}
-		}	
+		}
   	}
 
   	//Set the proper room for every actor.
@@ -236,14 +287,14 @@ void Game::loadGameInfo() {
   			monMap[actRefMap[it->first]->getId()]->addItem(it->second->getId(), it->second);
   		}
   		if(envRefMap.find(it->first) != envRefMap.end()) {
-  			envMap[envRefMap[it->first]->getId()]->addItem(it->second->getId(), it->second);
+  			std::string test = it->second->getName();
+  			std::transform(test.begin(), test.end(), test.begin(), ::tolower);
+  			envMap[envRefMap[it->first]->getId()]->addItem(it->second->getName(), it->second);
   		}
   	}
-  	/*
-  	for(std::unordered_map<std::string, Environment*>::iterator it = envMap.begin(); it != envMap.end(); ++it) {
-  		it->second->printNeighbors();
-  	}
-  	*/
+  	player->setLocation(envRefMap["PLA"]);
+  	Environment * envi = player->getLocation();
+  	envi->enter(player);
 }
 
 Monster * Game::decideAct(std::string name, std::string type) {
@@ -330,21 +381,22 @@ void Game::intro() {
 	std::string name;
 	getline(std::cin, name);
 	do {
+		std::cout << std::endl;
 		slowPrint("Are you a singer, guitarist, bassist or drummer?");
+		std::cout << std::endl;
 		vocation = nextCommand();
 	} while(vocation.compare("singer") != 0 && vocation.compare("guitarist") != 0 && vocation.compare("bassist") != 0 && vocation.compare("drummer") != 0);
 	if(vocation.compare("singer") == 0) {
-		player = new Singer(name);
+		player = new Singer("PLA");
 	} else if(vocation.compare("guitarist") == 0) {
-		player = new Guitarist(name);
+		player = new Guitarist("PLA");
 	} else if(vocation.compare("bassist") == 0) {
-		player = new Bassist(name);
+		player = new Bassist("PLA");
 	} else if(vocation.compare("drummer") == 0) {
-		player = new Drummer(name);
+		player = new Drummer("PLA");
 	}
 	player->setName(name);
-	player->setLocation(envMap["ENV1"]);
-	std::cout << std::endl;
+	std::cout << "You are " << name << " the " << vocation << "." << std::endl << std::endl;
 	slowPrint("In order to print the list of actions, type: #Action");
 	//usleep(3000000);
 	std::cout << std::endl;
@@ -357,4 +409,19 @@ void Game::slowPrint(std::string input) const {
 		//usleep(30000);
 	}
 	std::cout << std::endl;
+}
+
+void Game::announceMonsterDeath(Monster * monster) const {
+	std::cout << monster->getName() << " the " << monster->getType() << " died." << std::endl << std::endl;
+	std::cout << "------------------------------------------------------------------------------" << std::endl << std::endl;
+}
+
+void Game::announcePlayerDeath() const {
+	std::cout << "You can't stand the heat of battle any longer, all you wanted to do was reach the max-level on your World of warcraft character." << std::endl;
+	std::cout << "As your body hits the soil you feel relaxed, realizing your life was not worth that much in the first place." << std::endl << std::endl;
+	std::cout << "You bleed to death. It hardly matters though, your career as a musician weren't progressing very well anyway." << std::endl << std::endl;
+}
+
+void Game::announceGameCompletion() const {
+	std::cout << "COMPLETED!" << std::endl;
 }

@@ -9,7 +9,7 @@ Bassist::Bassist(std::string name_) : Musician(name_, "bassist") {
 	fightMoves = {"IntolerableBassline", "FunkyBassline", "PlectrumStrike"};
 
 	//paralyze enemies
-	simpleBattleAction["intolerablebassline"] = [this] () -> void {
+	simpleBattleAction["intolerablebassline"] = [this] () -> bool {
 		std::unordered_map<std::string, Monster*> monsters = this->getOpponents();
 		for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
 			if(this->hit()) {
@@ -19,10 +19,11 @@ Bassist::Bassist(std::string name_) : Musician(name_, "bassist") {
 				miss(it->second);
 			}
 		}
+		return true;
 	};
 
 	//damage all enemies
-	simpleBattleAction["funkybassline"] = [this] () -> void { 
+	simpleBattleAction["funkybassline"] = [this] () -> bool { 
 		std::unordered_map<std::string, Monster*> monsters = this->getOpponents();
 		for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
 			if(this->hit()) {
@@ -33,16 +34,15 @@ Bassist::Bassist(std::string name_) : Musician(name_, "bassist") {
 				} else {
 					it->second->announceDamage(0);
 				}
-				this->isDead(it->second);
 			} else {
 				this->miss(it->second);
 			}
 		}
-		this->stillBattle();
+		return true;
 	};
 
 	//single target attack
-	actBattleAction["plectrumstrike"] = [this] (Monster * target) -> void { 
+	actBattleAction["plectrumstrike"] = [this] (Monster * target) -> bool { 
 		if(this->hit()) {
 			int damage = determineDamage(14 + this->getAttack());
 			if(damage > target->getDefense()) {
@@ -51,11 +51,10 @@ Bassist::Bassist(std::string name_) : Musician(name_, "bassist") {
 			} else {
 				target->announceDamage(0);
 			}
-			this->isDead(target);
 		} else {
 			this->miss(target);
 		}
-		this->stillBattle();
+		return true;
 	};
 }
 

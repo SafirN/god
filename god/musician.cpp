@@ -7,66 +7,71 @@ using namespace game;
 
 Musician::Musician(std::string name_, std::string type_) : Human(name_, type_) {
 	//inspect current room
-	simpleAction["inspect"] = [this] () -> void {
-		location->printDescription();
+	simpleAction["inspect"] = [this] () -> bool {
+		this->getLocation()->printDescription();
+		return false;
 	};
 
 	//inspect actor
-	actorAction["inspect"] = [this] (Actor * target) -> void {
-		target->printDescription(); 
+	actorAction["inspect"] = [this] (Actor * target) -> bool {
+		target->printDescription();
+		return false;
 	};
 
 	//talk to actor
-	actorAction["talk"] = [this] (Actor * target) -> void {
+	actorAction["talk"] = [this] (Actor * target) -> bool {
 		std::cout << target->getGreeting() << std::endl;
+		return true;
 	};
 	
-	actorAction["attack"] = [this] (Monster * target) -> void {
+	actorAction["attack"] = [this] (Monster * target) -> bool {
 		std::cout << "You attack " << target->getName() << " the " << target->getType() << "!" << std::endl;
 		this->setCombat(true);
 		target->setCombat(true);
 		this->addOpponent(target);
 		this->location->checkParticipation(target);
+		std::cout << std::endl;
+		return false;
 	};
 
 	//go in a direction
-	environmentAction["go"] = [this] (std::string direction) -> void {
+	environmentAction["go"] = [this] (std::string direction) -> bool {
 		Environment * env = location->getNeighbor(direction);
-		if(env->containsMonsters()) {
-			std::cout << "Hostile monsters are blocking the way! Kill them off first!" << std::endl;
+		if(this->getLocation()->containsMonsters()) {
+			std::cout << "Hostile monsters are blocking the way! Kill them off first!" << std::endl << std::endl;
 		} else if(location->isLocked(direction)) {
-			std::cout << "The door is locked." << std::endl;
+			std::cout << "The door is locked." << std::endl << std::endl;
 		} else {
+			std::cout << "You head " << direction << "." << std::endl << std::endl;
 			getLocation()->leave();
-			env->enter();
+			env->enter(this);
 			this->setLocation(env);
-			std::cout << std::endl;
-			std::unordered_map<std::string, Monster*> monsters = env->getMonsters();
-			for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
-				std::cout << it->second->getName() << " says: " << it->second->getGreeting() << std::endl;
-			}
 		}
+		return true;
 	};
 
 	//inspect item
-	itemAction["inspect"] = [this] (Item * target) -> void {
+	itemAction["inspect"] = [this] (Item * target) -> bool {
 		std::cout << target->getDescription() << std::endl;
+		return false;
 	};
 
 	//take item
-	itemAction["take"] = [this] (Item * target) -> void {
+	itemAction["take"] = [this] (Item * target) -> bool {
 		if(target->getWeight() <= this->getCapacity()) {
 			this->addItem(target->getId(), target);
 			this->getLocation()->removeItem(target->getId());
 			std::cout << "You picked up " << target->getName() << "." <<std::endl;
 		} else {
 			std::cout << target->getName() << " is too heavy." << std::endl;
-		}	
+		}
+		return true;
 	};
 	
 	//use item
-	itemAction["use"] = [this] (Item * target) -> void {
+	itemAction["use"] = [this] (Item * target) -> bool {
 		target->use(this);
+		return true;
 	};
 }
 
@@ -74,35 +79,46 @@ Musician::~Musician() {
 
 }
 
-bool Musician::action(std::string move, std::string target) {
-	Monster * monster = this->getLocation()->getMonster(target);
-	Environment * environment = location->getNeighbor(target);
-	Item * itemArea = location->getItem(target);
-	Item * itemActor = getItem(target);
+bool Musician::action(std::vector<std::string> vec) {
+	std::string move = vec[0];
+	std::string conc = "";
+
+	for(std::vector<std::string>::iterator it = vec.begin() + 1; it != vec.end(); ++it) {
+		conc += *it;
+		if((it + 1) != vec.end()) {
+			conc += " ";
+		}
+	}
+
+	Monster * monster = this->getLocation()->getMonster(conc);
+	Environment * environment = location->getNeighbor(conc);
+	Item * itemArea = location->getItem(conc);
+	Item * itemActor = getItem(conc);
+	bool roundPassed = false;
 	if(monster != nullptr) {
  		try {
-	   		actorAction[move](monster);
+	   		roundPassed = actorAction[move](monster);
 	 	} catch(std::bad_function_call& e) {
 	   		std::cout << "The action you entered can not be performed on an actor or does not exist." << std::endl;
 	   		return true;
 	 	}
 	} else if(environment != nullptr) {
 	 	try {
-	   		environmentAction[move](target);
+	   		roundPassed = environmentAction[move](conc);
 	 	} catch(std::bad_function_call& e) {
 	   		std::cout << "The action you entered can not be performed on an environment or does not exist." << std::endl;
 	   		return true;
 	 	}
 	} else if(itemArea != nullptr) {
 		try{
-	   		itemAction[move](itemArea);
+	   		roundPassed = itemAction[move](itemArea);
 	 	} catch(std::bad_function_call& e) {
 	   		std::cout << "The action you entered can not be performed on an item or does not exist." << std::endl;
 	   		return true;
 		}
 	} else if(itemActor != nullptr) {
 		try{
-	   		itemAction[move](itemActor);
+	   		roundPassed = itemAction[move](itemActor);
 	 	} catch(std::bad_function_call& e) {
 	   		std::cout << "The action you entered can not be performed on an item or does not exist." << std::endl;
 	   		return true;
@@ -111,28 +127,40 @@ bool Musician::action(std::string move, std::string target) {
 		std::cout << "No such object is in your vicinity at this time." << std::endl;
 		return true;
 	}
-	return false;
+	return !(roundPassed);
 }
 
 bool Musician::action(std::string move) {
+	bool roundPassed = false;
 	try {
-		simpleAction[move]();
+		roundPassed = simpleAction[move]();
 	} catch(std::bad_function_call& e) {
 		std::cout << "That action does not exist." << std::endl;
 		return true;
 	}
-	return false;
+	return !(roundPassed);
 }
 
-bool Musician::battleAction(std::string move, std::string target) {
-	Monster * monster = this->getLocation()->getMonster(target);
+bool Musician::battleAction(std::vector<std::string> vec) {
+	std::string move = vec[0];
+	std::string conc = "";
+
+	for(std::vector<std::string>::iterator it = vec.begin() + 1; it != vec.end(); ++it) {
+		conc += *it;
+		if((it + 1) != vec.end()) {
+			conc += " ";
+		}
+	}
+	Monster * monster = this->getLocation()->getMonster(conc);
 	if(monster != nullptr) {
 		try {
 			actBattleAction[move](monster);	
 		} catch(std::bad_function_call& e) {
-			std::cout << "That action does not exist." << std::endl;
+			std::cout << "That action is not possible at this time, perhaps ever." << std::endl;
 			return true;
 		}
+	} else {
+		std::cout << "No such object is in your vicinity at this time." << std::endl;
 	}
 	return false;
 }

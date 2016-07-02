@@ -18,3 +18,15 @@ int Monster::getLoyalty() const {
 void Monster::setLoyalty(int loyalty) {
 	this->loyalty = loyalty;
 }
+
+void Monster::action() {
+	int move = rand() % (moves.size() - 1);
+	//attack
+	//look
+	//talk
+}
+
+void Monster::battleAction() {
+	int move = rand() % (fightMoves.size() - 1);
+	fightMoves[move]();
+}

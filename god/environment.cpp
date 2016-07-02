@@ -6,6 +6,7 @@
 #include "headers/troll.hpp"
 #include "headers/orc.hpp"
 #include "headers/lizard.hpp"
+#include "headers/item.hpp"
 #include <time.h>
 #include <algorithm>
 
@@ -33,10 +34,24 @@ void Environment::printDescription() {
 
 	std::cout << std::endl;
 
+	std::cout << "Items in this room: " << std::endl;
+	for(std::unordered_map<std::string, Item*>::iterator it = currentItems.begin(); it != currentItems.end(); ++it) {
+		std::cout << it->second->getName() << std::endl;
+	}
+
+	std::cout << std::endl;
+
 	std::cout << "Monsters in this room: " << std::endl;
 	for(std::unordered_map<std::string, Monster*>::iterator it = currentMonsters.begin(); it != currentMonsters.end(); ++it) {
 		std::cout << it->second->getType() << ": " << it->second->getName() << std::endl;
 	}
+	std::cout << std::endl;
+
+	std::unordered_map<std::string, Monster*> monsters = this->getMonsters();
+	for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
+		std::cout << it->second->getName() << " says: " << it->second->getGreeting() << std::endl;
+	}
+	std::cout << std::endl;
 }
 
 void Environment::getDirections() const {
@@ -75,11 +90,12 @@ void Environment::addEntrance(std::tuple<Environment*, std::string, std::string,
 
 void Environment::addMonster(Monster * monster) {
 	std::string name = monster->getName();
-	std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+	transform(name.begin(), name.end(), name.begin(), ::tolower);
 	currentMonsters[name] = monster;
 }
 
 void Environment::removeMonster(std::string name) {
+	transform(name.begin(), name.end(), name.begin(), ::tolower);
 	currentMonsters.erase(name);
 }
 
@@ -87,8 +103,9 @@ std::string Environment::getId() const {
 	return id;
 }
 
-void Environment::enter() {
+void Environment::enter(Actor * actor) {
 	containsPlayer = true;
+	player = actor;
 	printDescription();
 }
 
@@ -123,10 +140,10 @@ void Environment::printItems() {
 }
 
 bool Environment::containsMonsters() const {
-	/*if(currentMonsters.size() == 0) {
+	if(currentMonsters.size() == 0) {
 		return false;
-	}*/
-	return false;
+	}
+	return true;
 }
 
 bool Environment::playerPresent() const {
@@ -154,7 +171,7 @@ void Environment::checkParticipation(Monster * monster) {
 		if(rand() % 5 > it->second->getLoyalty() && it->second->getName() != monster->getName()) {
 			std::cout << it->second->getName() << " the " << it->second->getType() << " joins the fray!" << std::endl;
 			it->second->setCombat(true);
-			player->addOpponent(monster);
+			player->addOpponent(it->second);
 		}
 	}
 }

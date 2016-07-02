@@ -12,6 +12,8 @@ namespace game {
 		void setLoyalty(int loyalty);
 		int getLoyalty() const;
 
+		virtual void action();
+		virtual void battleAction();
 	protected:
 		int loyalty;
 	};	

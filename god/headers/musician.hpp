@@ -10,20 +10,21 @@ namespace game {
 		virtual ~Musician();
 
 		bool action(std::string move);
-		bool action(std::string move, std::string target);
+		bool action(std::vector<std::string> vec);
 		bool battleAction(std::string move);
-		bool battleAction(std::string move, std::string target);
+		bool battleAction(std::vector<std::string> vec);
 
 		void printDescription() const;
 		void printGreeting();
+		void stillBattle();
 		
 	protected:
-		std::unordered_map<std::string, std::function<void()>> simpleAction;
-		std::unordered_map<std::string, std::function<void(Monster * target)>> actorAction;
-		std::unordered_map<std::string, std::function<void(std::string direction)>> environmentAction;
-		std::unordered_map<std::string, std::function<void(Item * target)>> itemAction;
-		std::unordered_map<std::string, std::function<void(Monster * target)>> actBattleAction;
-		std::unordered_map<std::string, std::function<void()>> simpleBattleAction;
+		std::unordered_map<std::string, std::function<bool()>> simpleAction;
+		std::unordered_map<std::string, std::function<bool(Monster * target)>> actorAction;
+		std::unordered_map<std::string, std::function<bool(std::string direction)>> environmentAction;
+		std::unordered_map<std::string, std::function<bool(Item * target)>> itemAction;
+		std::unordered_map<std::string, std::function<bool(Monster * target)>> actBattleAction;
+		std::unordered_map<std::string, std::function<bool()>> simpleBattleAction;
 	private:
 	};	
 }

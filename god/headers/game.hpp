@@ -9,6 +9,7 @@
 #include <vector>
 #include <exception>
 #include <string>
+#include <algorithm>
 #include "singer.hpp"
 #include "drummer.hpp"
 #include "bassist.hpp"
@@ -42,10 +43,14 @@ namespace game {
 		void launch();
 		std::string nextCommand();
 		std::vector<std::string> chopInput(std::string command);
-
+		bool stillBattle();
 		//prints
 		void printActions() const;
 		void slowPrint(std::string input) const;
+		void announceBattleState();
+		void announcePlayerDeath() const;
+		void announceGameCompletion() const;
+		void announceMonsterDeath(Monster * monster) const;
 
 		//loadfile members
 		Monster * decideAct(std::string type, std::string id);
@@ -65,7 +70,5 @@ namespace game {
 		std::unordered_map<std::string, Item*> itemMap;
 	};	
 }
-
-
 
 #endif
