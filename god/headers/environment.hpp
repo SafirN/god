@@ -16,6 +16,7 @@ namespace game {
 		//getters
 		void getDirections() const;
 		std::string getId() const;
+		Musician * getPlayer();
 		Monster * getMonster(std::string target);
 		Environment * getNeighbor(std::string target);
 		Item * getItem(std::string target);
@@ -28,7 +29,7 @@ namespace game {
 		void addEntrance(std::tuple<Environment*, std::string, std::string, std::string> info);
 		void addMonster(Monster * monster);
 		void removeMonster(std::string name);
-		void enter(Actor * actor);
+		void enter(Musician * actor);
 		void leave();
 		void removeItem(std::string identifier);
 		void addItem(std::string identifier, Item * item);
@@ -47,7 +48,7 @@ namespace game {
 	protected:
 		std::string id;
 		std::string description;
-		Actor * player;
+		Musician * player;
 		bool containsPlayer;
 
 		std::unordered_map<std::string, Monster*> currentMonsters;

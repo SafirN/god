@@ -20,7 +20,8 @@ namespace game {
 		std::string getName() const { return name; }
 		std::string getType() const { return type; }
 		Environment * getLocation() const { return location; }
-		int getHealth() const { return health; }
+		int getHealth() const { return this->health; }
+		int getMaxHealth() const { return this->maxHealth; }
 		int getAttack() const { return attack; }
 		int getDefense() const { return defense; }
 		std::string getStatus() const { return status; }
@@ -36,7 +37,8 @@ namespace game {
 
 		//setter definitions
 		void setName(std::string name) { this->name = name; }
-		void setHealth(int health) { this->health = health; }
+		void setHealth(int health);
+		void setMaxHealth(int maxHealth) { this->maxHealth = maxHealth; }
 		void setAttack(int attack) { this->attack = attack; }
 		void setDefense(int defense) { this->defense = defense; }
 		void setStatus(std::string status) { this->status = status; }
@@ -56,15 +58,16 @@ namespace game {
 		void printItems();
 		virtual void printDescription() const;
 		void announceDeath();
-		void announceDamage(int damage) const;
-		void announceHealing(int healing) const;
-		void announceStatus() const;
+		virtual void announceDamage(int damage, Monster * monster) const;
+		virtual void announceHealing(int healing) const;
+		virtual void announceStatus() const;
 		
 		//virtual std::vector<std::string> getFightMoves() const;
 
 		//actions
 		bool hit() const;
-		void miss(Actor * actor) const;
+		void announceMiss(std::string move) const;
+		void announceMiss(Actor * actor) const;
 		virtual int determineDamage(int mean);
 		virtual int determineHealing(int mean);
 
@@ -75,14 +78,13 @@ namespace game {
 		std::string status;
 		std::string greeting;
 		int health;
+		int maxHealth;
 		int attack;
 		int defense;
 		double capacity;
 		bool inCombat;
 		bool complete;
 		Environment * location;
-		std::vector<std::string> moves;
-		std::vector<std::string> fightMoves;
 		std::unordered_map<std::string, Item*> currentItems;
 		std::unordered_map<std::string, Monster*> currentOpponents;
 	private:

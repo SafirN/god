@@ -2,7 +2,7 @@
 
 using namespace game;
 
-Equippable::Equippable(std::string id_) : Item(id_) {
+Equippable::Equippable(std::string id_, std::string type_) : Item(id_, type_) {
 
 }
 

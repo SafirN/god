@@ -7,8 +7,6 @@ namespace game {
 	public:
 		explicit Bassist(std::string name_);
 		virtual ~Bassist();
-
-		virtual std::vector<std::string> getFightMoves() const;
 	
 	protected:
 	private:

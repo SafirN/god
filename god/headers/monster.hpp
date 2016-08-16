@@ -14,8 +14,14 @@ namespace game {
 
 		virtual void action();
 		virtual void battleAction();
+		virtual void announceDamage(int damage, std::string move) const;
+		virtual void announceHealing(int healing, std::string move) const;
+
 	protected:
 		int loyalty;
+
+		std::vector<std::function<bool()>> actions;
+		std::vector<std::function<bool()>> battleActions;
 	};	
 }
 

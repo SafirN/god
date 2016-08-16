@@ -6,7 +6,6 @@ using namespace game;
 
 //
 Bassist::Bassist(std::string name_) : Musician(name_, "bassist") {
-	fightMoves = {"IntolerableBassline", "FunkyBassline", "PlectrumStrike"};
 
 	//paralyze enemies
 	simpleBattleAction["intolerablebassline"] = [this] () -> bool {
@@ -16,7 +15,7 @@ Bassist::Bassist(std::string name_) : Musician(name_, "bassist") {
 				it->second->setStatus("paralyzed");
 				it->second->announceStatus();
 			} else {
-				miss(it->second);
+				announceMiss(it->second);
 			}
 		}
 		return true;
@@ -28,14 +27,15 @@ Bassist::Bassist(std::string name_) : Musician(name_, "bassist") {
 		for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
 			if(this->hit()) {
 				int damage = determineDamage(8 + this->getAttack());
-				if(damage > it->second->getDefense()) {
-					it->second->setHealth(it->second->getHealth() - (damage - it->second->getDefense()));
-					it->second->announceDamage(damage - it->second->getDefense());
+				int calculatedDamage = damage - it->second->getDefense();
+				if(calculatedDamage > 0) {
+					it->second->setHealth(it->second->getHealth() - calculatedDamage);
+					this->announceDamage(calculatedDamage, it->second);
 				} else {
-					it->second->announceDamage(0);
+					this->announceDamage(0, it->second);
 				}
 			} else {
-				this->miss(it->second);
+				this->announceMiss(it->second);
 			}
 		}
 		return true;
@@ -45,14 +45,15 @@ Bassist::Bassist(std::string name_) : Musician(name_, "bassist") {
 	actBattleAction["plectrumstrike"] = [this] (Monster * target) -> bool { 
 		if(this->hit()) {
 			int damage = determineDamage(14 + this->getAttack());
-			if(damage > target->getDefense()) {
-				target->setHealth(target->getHealth() - (damage - target->getDefense()));
-				target->announceDamage(damage - target->getDefense());
+			int calculatedDamage = damage - target->getDefense();
+			if(calculatedDamage > 0) {
+				target->setHealth(target->getHealth() - calculatedDamage);
+				this->announceDamage(calculatedDamage, target);
 			} else {
-				target->announceDamage(0);
+				this->announceDamage(0, target);
 			}
 		} else {
-			this->miss(target);
+			this->announceMiss(target);
 		}
 		return true;
 	};
@@ -60,8 +61,4 @@ Bassist::Bassist(std::string name_) : Musician(name_, "bassist") {
 
 Bassist::~Bassist() {
 
-}
-
-std::vector<std::string> Bassist::getFightMoves() const {
-	return fightMoves;
 }

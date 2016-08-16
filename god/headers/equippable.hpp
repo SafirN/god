@@ -5,7 +5,7 @@
 namespace game {
 	class Equippable : public Item {
 	public:
-		explicit Equippable(std::string id_);
+		explicit Equippable(std::string id_, std::string type_);
 		virtual ~Equippable();
 
 		void use(Actor * actor);

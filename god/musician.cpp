@@ -24,6 +24,7 @@ Musician::Musician(std::string name_, std::string type_) : Human(name_, type_) {
 		return true;
 	};
 	
+	//attack an actor
 	actorAction["attack"] = [this] (Monster * target) -> bool {
 		std::cout << "You attack " << target->getName() << " the " << target->getType() << "!" << std::endl;
 		this->setCombat(true);
@@ -47,7 +48,7 @@ Musician::Musician(std::string name_, std::string type_) : Human(name_, type_) {
 			env->enter(this);
 			this->setLocation(env);
 		}
-		return true;
+		return false;
 	};
 
 	//inspect item
@@ -70,8 +71,12 @@ Musician::Musician(std::string name_, std::string type_) : Human(name_, type_) {
 	
 	//use item
 	itemAction["use"] = [this] (Item * target) -> bool {
-		target->use(this);
-		return true;
+		if(target->getType().compare("usable") == 0) {
+			target->use(this);	
+			return true;
+		}
+		std::cout << "That item can not be used." << std::endl;
+		return false;
 	};
 }
 
@@ -161,6 +166,7 @@ bool Musician::battleAction(std::vector<std::string> vec) {
 		}
 	} else {
 		std::cout << "No such object is in your vicinity at this time." << std::endl;
+		return true;
 	}
 	return false;
 }

@@ -9,18 +9,20 @@ ENV4:forest:The forest is truly dense in this area. The smell of recently baked 
 ENV5:forest:You stand at the entrance to a cave. A primitive encampment emits a foul stench of unwashed creature bodies.
 :ENV2:south:open:hidden:ENV4:east:open:visible:ENV6:north:locked:visible:ACT8:ACT9:ACT10:
 ENV6:room:You are in a rather large cave. The air is moist and you find it hard to draw breath in here. This is not a place where you would want to stay, unfortunately this is where your fiber line is located.
-:ENV5:south:locked:visible:ACT11:
-ACT1:troll:Bubba:20:2:5:2:100:normal:no:Bubba smash, Bubba trash! Bubba got stash.
-ACT2:orc:Zugligu:30:3:2:3:100:normal:no:UUUUHHHH!
-ACT3:troll:Smurdah:20:2:5:2:100:normal:no:Smurdah here, chillaxing.
-ACT4:troll:Gullgullda:20:2:5:2:100:normal:no:I hate humans that are not located in my frying pan.
-ACT5:orc:Ballor:30:3:2:3:100:normal:no:I am.. great!
-ACT6:lizard:Deazz:25:5:4:4:100:normal:no:Look at this puny human, Takzezz.
-ACT7:lizard:Takzezz:25:5:4:4:100:normal:no:Shut the fuck up Deazz.
-ACT8:troll:Bonk:20:2:5:2:100:normal:no:Me bonk. Me bonk you.
-ACT9:orc:Kekor:30:3:2:3:100:normal:no:I laugh a lot.
-ACT10:lizard:Zmoothz:25:5:4:4:100:normal:no:All I do, I do in Zzip-Zzap's name!
-ACT11:lizard:Zzip-Zzap:50:8:5:4:100:normal:no:How did you get here?! I hope you slaughtered every single one of my worthless minions on the way here.
+:ENV5:south:locked:visible:ACT11:ITE3
+ACT1:troll:Bubba:20:20:2:5:2:100:normal:no:Bubba smash, Bubba trash! Bubba got stash.
+ACT2:orc:Zugligu:30:30:3:2:3:100:normal:no:UUUUHHHH!
+ACT3:troll:Smurdah:20:20:2:5:2:100:normal:no:Smurdah here, chillaxing.
+ACT4:troll:Gullgullda:20:20:2:5:2:100:normal:no:I hate humans that are not located in my frying pan.
+ACT5:orc:Ballor:30:30:3:2:3:100:normal:no:I am.. great!
+ACT6:lizard:Deazz:25:25:5:4:4:100:normal:no:Look at this puny human, Takzezz.
+ACT7:lizard:Takzezz:25:25:5:4:4:100:normal:no:Shut the fuck up Deazz.
+ACT8:troll:Bonk:20:20:2:5:2:100:normal:no:Me bonk. Me bonk you.
+ACT9:orc:Kekor:30:30:3:2:3:100:normal:no:I laugh a lot.
+ACT10:lizard:Zmoothz:25:25:5:4:4:100:normal:no:All I do, I do in Zzip-Zzap's name!
+ACT11:lizard:Zzip-Zzap:50:50:8:5:4:100:normal:no:How did you get in?! I hope you slaughtered every single one of my worthless minions on the way here.
 ITE1:equippable:Lens of Jens:0.1
 ITE2:consumable:Cupcake of a thousand flavours:0.5
-PLA:100:6:4:25.0:normal:no
+ITE3:stationary:Surfaced fiber cable:0
+ITE4:usable:Shovel of the dark depths:10.0
+PLA:100:100:6:4:25.0:normal:no

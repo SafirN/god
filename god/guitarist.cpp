@@ -4,21 +4,20 @@
 using namespace game;
 
 Guitarist::Guitarist(std::string name_) : Musician(name_, "guitarist") {
-	fightMoves = {"BackupVocals", "TerribleSolo", "TuneGuitar"};
 
 	simpleBattleAction["backupvocals"] = [this] () -> bool {
 		std::unordered_map<std::string, Monster*> monsters = this->getOpponents();
 		for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
 			if(this->hit()) {
-				int damage = determineDamage(8 + this->getAttack());
-				if(damage > it->second->getDefense()) {
-					it->second->setHealth(it->second->getHealth() - (damage - it->second->getDefense()));
-					it->second->announceDamage(damage - it->second->getDefense());
+				int calculatedDamage = determineDamage(8 + this->getAttack()) - it->second->getDefense();
+				if(calculatedDamage > 0) {
+					it->second->setHealth(it->second->getHealth() - calculatedDamage);
+					this->announceDamage(calculatedDamage, it->second);
 				} else {
-					it->second->announceDamage(0);
+					this->announceDamage(0, it->second);
 				}
 			} else {
-				this->miss(it->second);
+				this->announceMiss(it->second);
 			}
 		}
 		return true;
@@ -26,12 +25,12 @@ Guitarist::Guitarist(std::string name_) : Musician(name_, "guitarist") {
 
 	//Single target attack, ignores defense
 	actBattleAction["terriblesolo"] = [this] (Monster * target) -> bool {
-		int damage = determineDamage(17 + this->getAttack());
+		int calculatedDamage = determineDamage(17 + this->getAttack());
 		if(this->hit()) {
-			target->setHealth(target->getHealth() - damage);
-			target->announceDamage(damage - target->getDefense());
+			target->setHealth(target->getHealth() - calculatedDamage);
+			this->announceDamage(calculatedDamage, target);
 		} else {
-			this->miss(target);
+			this->announceMiss(target);
 		}
 		return true;
 	};
@@ -47,8 +46,4 @@ Guitarist::Guitarist(std::string name_) : Musician(name_, "guitarist") {
 
 Guitarist::~Guitarist() {
 
-}
-
-std::vector<std::string> Guitarist::getFightMoves() const {
-	return fightMoves;
 }

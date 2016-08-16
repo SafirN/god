@@ -1,14 +1,10 @@
 #include "headers/environment.hpp"
-#include "headers/bassist.hpp"
-#include "headers/drummer.hpp"
-#include "headers/guitarist.hpp"
-#include "headers/singer.hpp"
-#include "headers/troll.hpp"
-#include "headers/orc.hpp"
-#include "headers/lizard.hpp"
 #include "headers/item.hpp"
+#include "headers/monster.hpp"
+#include "headers/musician.hpp"
 #include <time.h>
 #include <algorithm>
+#include <iostream>
 
 using namespace game;
 
@@ -58,6 +54,10 @@ void Environment::getDirections() const {
 
 }
 
+Musician * Environment::getPlayer() {
+	return player;
+}
+
 Monster * Environment::getMonster(std::string target) {
 	std::unordered_map<std::string, Monster*>::iterator it = currentMonsters.find(target);
 	if(it == currentMonsters.end()) {
@@ -103,7 +103,7 @@ std::string Environment::getId() const {
 	return id;
 }
 
-void Environment::enter(Actor * actor) {
+void Environment::enter(Musician * actor) {
 	containsPlayer = true;
 	player = actor;
 	printDescription();
@@ -111,6 +111,7 @@ void Environment::enter(Actor * actor) {
 
 void Environment::leave() {
 	containsPlayer = false;
+	player = nullptr;
 }
 
 std::unordered_map<std::string, Monster*> & Environment::getMonsters() {
@@ -147,7 +148,11 @@ bool Environment::containsMonsters() const {
 }
 
 bool Environment::playerPresent() const {
-	return containsPlayer;
+	if(player != nullptr) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 bool Environment::isLocked(std::string direction) {
@@ -165,8 +170,6 @@ void Environment::printNeighbors() {
 }
 
 void Environment::checkParticipation(Monster * monster) {
-	time_t t;
-	srand((unsigned) time(&t));
 	for(std::unordered_map<std::string, Monster*>::iterator it = currentMonsters.begin(); it != currentMonsters.end(); ++it) {
 		if(rand() % 5 > it->second->getLoyalty() && it->second->getName() != monster->getName()) {
 			std::cout << it->second->getName() << " the " << it->second->getType() << " joins the fray!" << std::endl;

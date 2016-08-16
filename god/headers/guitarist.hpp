@@ -7,8 +7,6 @@ namespace game {
 	public:
 		explicit Guitarist(std::string name_);
 		virtual ~Guitarist();
-		
-		virtual std::vector<std::string> getFightMoves() const;
 
 	protected:
 	private:

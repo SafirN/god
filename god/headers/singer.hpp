@@ -8,7 +8,6 @@ namespace game {
 		explicit Singer(std::string name_);
 		virtual ~Singer();
 
-		virtual std::vector<std::string> getFightMoves() const;
 	protected:
 	private:
 	};	

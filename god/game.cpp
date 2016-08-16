@@ -62,21 +62,20 @@ void Game::launch() {
 			if(player->isInCombat()) {
 				if(commandWords.size() == 1) {
 					round = player->battleAction(command);
-					announceBattleState();
 				} else {
 					round = player->battleAction(commandWords);
-					announceBattleState();
-				} 
+				}
 			} else {
 				if(commandWords.size() == 1) {
-					round = player->action(commandWords[0]);
+					round = player->action(command);
 				} else {
 					round = player->action(commandWords);
 				}
 			}
 		}
-		std::cout << "------------------------------------------------------------------------------" << std::endl << std::endl;
+		
 		std::unordered_map<std::string, Monster*> opponents = player->getOpponents();
+		
 		for(std::unordered_map<std::string, Monster*>::iterator it = opponents.begin(); it != opponents.end(); ++it) {
 			if(!(it->second->isAlive())) {
 				announceMonsterDeath(it->second);
@@ -85,7 +84,9 @@ void Game::launch() {
 				delete it->second;
 			}
 		}
+
 		std::unordered_map<std::string, Monster*> monsters = player->getLocation()->getMonsters();
+
 		for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
 			if(it->second->isInCombat()) {
 				it->second->battleAction();
@@ -93,7 +94,11 @@ void Game::launch() {
 				it->second->action();
 			}
 		}
-		
+
+		announceBattleState();
+
+		std::cout << "------------------------------------------------------------------------------" << std::endl << std::endl;
+
 		if(!stillBattle()) {
 			player->setCombat(false);
 			player->getLocation()->printDescription();
@@ -119,9 +124,9 @@ bool Game::stillBattle() {
 void Game::announceBattleState() {
 	std::unordered_map<std::string, Monster*> monsters = player->getOpponents();
 	for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
-		std::cout << it->second->getName() << " the " << it->second->getType() << ": " << it->second->getHealth() << " health." << std::endl; 
+		std::cout << it->second->getName() << " the " << it->second->getType() << ": " << it->second->getHealth() << "/" << it->second->getMaxHealth() << " health." << std::endl; 
 	}
-	std::cout << player->getName() << " the " << player->getType() << ": " << player->getHealth() << " health." << std::endl << std::endl;
+	std::cout << player->getName() << " the " << player->getType() << ": " << player->getHealth() << "/" << player->getMaxHealth() << " health." << std::endl << std::endl;
 }
 
 /*
@@ -184,6 +189,8 @@ void Game::loadGameInfo() {
 			std::getline(loadFile, extracts[1], ':');
 			monster->setName(extracts[1]);
 			std::getline(loadFile, extracts[2], ':');
+			monster->setMaxHealth(std::stoi(extracts[2]));
+			std::getline(loadFile, extracts[2], ':');
 			monster->setHealth(std::stoi(extracts[2]));
 			std::getline(loadFile, extracts[2], ':');
 			monster->setAttack(std::stoi(extracts[2]));
@@ -232,6 +239,8 @@ void Game::loadGameInfo() {
 			item->setDescription(extracts[0]);
 			itemMap[item->getName()] = item;
 		} else if(object.compare("PLA") == 0) {
+			std::getline(loadFile, extracts[0], ':');
+			player->setMaxHealth(std::stoi(extracts[0]));
 			std::getline(loadFile, extracts[0], ':');
 			player->setHealth(std::stoi(extracts[0]));
 			std::getline(loadFile, extracts[0], ':');
@@ -321,11 +330,13 @@ Environment * Game::decideEnv(std::string id, std::string type) {
 
 Item * Game::decideItem(std::string id, std::string type) {
 	if(type.compare("container") == 0) {
-		return new Container(id);
+		return new Container(id, "container");
 	} else if(type.compare("consumable") == 0) {
-		return new Consumable(id);
+		return new Consumable(id, "consumable");
 	} else if(type.compare("equippable") == 0) {
-		return new Equippable(id);
+		return new Equippable(id, "equippable");
+	} else if(type.compare("stationary") == 0) {
+		return new Stationary(id, "stationary");
 	}
 	return nullptr;
 }
@@ -417,7 +428,7 @@ void Game::announceMonsterDeath(Monster * monster) const {
 }
 
 void Game::announcePlayerDeath() const {
-	std::cout << "You can't stand the heat of battle any longer, all you wanted to do was reach the max-level on your World of warcraft character." << std::endl;
+	std::cout << "You can't stand the heat of battle any longer, and all you ever wanted to do was reach the max-level on your World of warcraft character." << std::endl;
 	std::cout << "As your body hits the soil you feel relaxed, realizing your life was not worth that much in the first place." << std::endl << std::endl;
 	std::cout << "You bleed to death. It hardly matters though, your career as a musician weren't progressing very well anyway." << std::endl << std::endl;
 }

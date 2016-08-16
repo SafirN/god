@@ -24,11 +24,15 @@ Item * Actor::getItem(std::string target) {
 	return nullptr;
 }
 
-bool Actor::isAlive() {
-	if(this->getHealth() > 0) {
-		return true;
+void Actor::setHealth(int health) {
+	this->health = health;
+	if(this->health > this->maxHealth) {
+		this->health = this->maxHealth;
 	}
-	return false;
+}
+
+bool Actor::isAlive() {
+	return (this->getHealth() > 0);
 }
 
 void Actor::addOpponent(Monster * monster) {
@@ -49,8 +53,8 @@ bool Actor::hit() const {
 	return true;
 }
 
-void Actor::announceDamage(int damage) const {
-	std::cout << "Dealt " << damage << " damage to " << this->getName() << " the " << this->getType() << "." << std::endl << std::endl; 
+void Actor::announceDamage(int damage, Monster * monster) const {
+	std::cout << "Dealt " << damage << " damage to " << monster->getName() << " the " << monster->getType() << "." << std::endl << std::endl; 
 }
 
 void Actor::announceHealing(int healing) const {
@@ -61,7 +65,11 @@ void Actor::announceStatus() const {
 	std::cout << this->getName() << " the " << this->getType() << " is " << this->getStatus() << "." << std::endl;
 }
 
-void Actor::miss(Actor * actor) const {
+void Actor::announceMiss(std::string move) const {
+	std::cout << this->getName() << " the " << this->getType() << " performed a " << move << ", but missed." << std::endl;
+}
+
+void Actor::announceMiss(Actor * actor) const {
 	std::cout << "Missed " << actor->getName() << " the " << actor->getType() << "." << std::endl;
 }
 

@@ -4,26 +4,26 @@
 using namespace game;
 
 Drummer::Drummer(std::string name_) : Musician(name_, "drummer") {
-	fightMoves = {"DrumstickBoomerang", "MonotoneBeat", "DrumFill"};
 
 	//deal massive damage to one enemy, chance to damage yourself
 	actBattleAction["drumstickboomerang"] = [this] (Monster * target) -> bool {
 		int damage = determineDamage(17 + this->getAttack());
+		int calculatedDamage = damage - target->getDefense();
 		if(this->hit()) {
-			if(damage > target->getDefense()) {
-				target->setHealth(target->getHealth() - (damage - target->getDefense()));
-				target->announceDamage(damage - target->getDefense());
+			if(calculatedDamage > 0) {
+				target->setHealth(target->getHealth() - calculatedDamage);
+				this->announceDamage(calculatedDamage, target);
 			} else {
-				target->announceDamage(0);
+				this->announceDamage(0, target);
 			}
 		} else {
-			this->miss(target);
+			this->announceMiss(target);
 		}
 
 		if((rand() % 4) == 1) {
-			if(damage > this->getDefense()) {
-				this->setHealth(this->getHealth() - (damage - this->getDefense()));
-				std::cout << "You caught the drumstick with your face. You dealt " << (damage - this->getDefense()) << " to yourself. " << std::endl;
+			if(calculatedDamage > 0) {
+				this->setHealth(this->getHealth() - calculatedDamage);
+				std::cout << "You caught the drumstick with your face. You dealt " << calculatedDamage << " to yourself. " << std::endl;
 			}	
 		}
 		return true;
@@ -37,7 +37,7 @@ Drummer::Drummer(std::string name_) : Musician(name_, "drummer") {
 				it->second->setStatus("asleep");
 				it->second->announceStatus();
 			} else {
-				miss(it->second);
+				this->announceMiss(it->second);
 			}
 		}
 		return true;
@@ -49,14 +49,15 @@ Drummer::Drummer(std::string name_) : Musician(name_, "drummer") {
 		for(std::unordered_map<std::string, Monster*>::iterator it = monsters.begin(); it != monsters.end(); ++it) {
 			if(this->hit()) {
 				int damage = determineDamage(10 + this->getAttack());
-				if(damage > it->second->getDefense()) {
+				int calculatedDamage = damage - it->second->getDefense();
+				if(calculatedDamage > 0) {
 					it->second->setHealth(it->second->getHealth() - (damage - it->second->getDefense()));
-					it->second->announceDamage(damage - it->second->getDefense());
+					this->announceDamage(calculatedDamage, it->second);
 				} else {
-					it->second->announceDamage(0);
+					this->announceDamage(0, it->second);
 				}
 			} else {
-				this->miss(it->second);
+				this->announceMiss(it->second);
 			}
 		}
 		return true;
@@ -65,8 +66,4 @@ Drummer::Drummer(std::string name_) : Musician(name_, "drummer") {
 
 Drummer::~Drummer() {
 
-}
-
-std::vector<std::string> Drummer::getFightMoves() const {
-	return fightMoves;
 }

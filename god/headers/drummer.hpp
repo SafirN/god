@@ -8,8 +8,6 @@ namespace game {
 		explicit Drummer(std::string name);
 		virtual ~Drummer();
 
-		virtual std::vector<std::string> getFightMoves() const;
-
 	protected:
 	private:
 	};	
